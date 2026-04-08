@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Fundamentals — CTF Club</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #fafafa;
+      --surface: #f0f0f0;
+      --border: #d8d8d8;
+      --text: #1a1a1a;
+      --dim: #777;
+      --accent: #2563eb;
+      --code-keyword: #1e40af;
+      --code-string: #15803d;
+      --code-comment: #9ca3af;
+      --code-tag: #7c3aed;
+      --code-attr: #b45309;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      -webkit-font-smoothing: antialiased;
+      background-image: radial-gradient(circle, #d0d0d0 0.8px, transparent 0.8px);
+      background-size: 24px 24px;
+    }
+
+    /* ── Slides ── */
+    .slide {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      padding: 40px 60px;
+      position: relative;
+      animation: fadeIn 0.4s ease;
+    }
+    .slide.active { display: flex; }
+
+    /* Accent top bar on content slides */
+    .slide::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 0 0 2px 2px;
+      opacity: 0.5;
+    }
+    .slide:first-child::before { display: none; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Typography ── */
+    h1 {
+      font-size: 3.8rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 16px;
+      text-align: center;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    h2 {
+      font-size: 2.6rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+      text-align: center;
+      letter-spacing: -0.01em;
+    }
+    h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 8px;
+      letter-spacing: 0.01em;
+    }
+    p, li {
+      font-size: 1.3rem;
+      line-height: 1.65;
+      color: var(--text);
+    }
+    .subtitle {
+      font-size: 1.35rem;
+      color: var(--dim);
+      text-align: center;
+      font-weight: 300;
+    }
+    .dim { color: var(--dim); }
+    .small { font-size: 1.05rem; color: var(--dim); }
+    .accent { color: var(--accent); }
+    strong { font-weight: 600; }
+    em { font-style: italic; color: var(--dim); }
+
+    /* ── Layout ── */
+    .content {
+      max-width: 1200px;
+      width: 100%;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+      max-width: 1200px;
+      width: 100%;
+    }
+    .three-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 28px;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      padding: 28px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    /* ── Lists ── */
+    ul { list-style: none; padding: 0; }
+    ul li {
+      padding: 7px 0;
+      padding-left: 22px;
+      position: relative;
+      font-size: 1.25rem;
+    }
+    ul li::before {
+      content: '--';
+      position: absolute;
+      left: 0;
+      color: var(--dim);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'IBM Plex Mono', monospace;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 1.05rem;
+      color: var(--accent);
+    }
+    pre {
+      font-family: 'IBM Plex Mono', monospace;
+      background: #1e1e2e;
+      border: none;
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-size: 1rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      color: #cdd6f4;
+      width: 100%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    pre .kw { color: #89b4fa; }
+    pre .str { color: #a6e3a1; }
+    pre .cmt { color: #6c7086; }
+    pre .tag { color: #cba6f7; }
+    pre .attr { color: #f9e2af; }
+
+    /* ── Diagrams ── */
+    .diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      width: 100%;
+    }
+    .diagram-node {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px 24px;
+      text-align: center;
+      background: var(--surface);
+      min-width: 120px;
+    }
+    .diagram-node .label {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+    .diagram-node .detail {
+      font-size: 0.85rem;
+      color: var(--dim);
+    }
+    .diagram-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 8px;
+      color: var(--dim);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+    }
+    .diagram-arrow .line {
+      width: 60px;
+      height: 1px;
+      background: var(--border);
+      position: relative;
+    }
+    .diagram-arrow .line::after {
+      content: '';
+      position: absolute;
+      right: -1px;
+      top: -3px;
+      border: 3px solid transparent;
+      border-left: 5px solid var(--border);
+    }
+    .diagram-arrow .arrow-label {
+      margin-bottom: 6px;
+      white-space: nowrap;
+    }
+
+    /* ── Analogy ── */
+    .analogy {
+      border-left: 2px solid var(--border);
+      padding: 12px 20px;
+      margin: 16px 0;
+      font-size: 1.05rem;
+      color: var(--dim);
+    }
+    .analogy strong { color: var(--text); }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 1.15rem;
+    }
+    th {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Status & Method labels ── */
+    .status {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .s-2xx { color: var(--code-string); }
+    .s-3xx { color: var(--code-attr); }
+    .s-4xx { color: #dc2626; }
+    .s-5xx { color: var(--code-tag); }
+
+    .method {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+
+    /* ── Illustration placeholder ── */
+    .illustration {
+      width: 100%;
+      max-width: 560px;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: var(--dim);
+      font-size: 0.95rem;
+      text-align: center;
+      padding: 8px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    .illustration img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    .prompt-ref {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--dim);
+      margin-top: 8px;
+    }
+
+    /* ── Navigation ── */
+    .nav {
+      position: fixed;
+      bottom: 28px;
+      right: 36px;
+      display: flex;
+      gap: 8px;
+      z-index: 100;
+    }
+    .nav button {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--dim);
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .nav button:hover {
+      color: var(--text);
+      border-color: var(--dim);
+    }
+
+    /* ── Progress ── */
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: var(--accent);
+      transition: width 0.4s ease;
+      z-index: 100;
+      opacity: 0.6;
+    }
+    .slide-counter {
+      position: fixed;
+      bottom: 32px;
+      left: 36px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--dim);
+      z-index: 100;
+    }
+
+    /* ── Stack diagram (HTML/CSS/JS) ── */
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .stack-layer {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface);
+    }
+    .stack-layer .stack-name {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .stack-layer .stack-role {
+      font-size: 0.9rem;
+      color: var(--dim);
+    }
+
+    /* ── Devtools mockup ── */
+    .devtools-mock {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 480px;
+    }
+    .devtools-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      padding: 0;
+    }
+    .devtools-tabs span {
+      padding: 8px 14px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--dim);
+      border-right: 1px solid var(--border);
+    }
+    .devtools-tabs span.active-tab {
+      color: var(--accent);
+      background: var(--bg);
+    }
+    .devtools-body {
+      padding: 12px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      line-height: 1.8;
+      color: var(--dim);
+    }
+    .devtools-body .dt-tag { color: var(--code-tag); }
+    .devtools-body .dt-attr { color: var(--code-attr); }
+    .devtools-body .dt-str { color: var(--code-string); }
+
+    /* ── Animated request-response ── */
+    .anim-scene {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      height: 300px;
+      margin: 0 auto;
+    }
+    .anim-scene svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Step indicator */
+    .anim-steps {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 20px;
+    }
+    .anim-step {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--dim);
+      opacity: 0.4;
+      transition: opacity 0.4s, color 0.4s;
+    }
+    .anim-step.active-step {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    /* Replay button */
+    .replay-btn {
+      display: block;
+      margin: 12px auto 0;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      padding: 6px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .replay-btn:hover {
+      color: var(--text);
+      border-color: var(--dim);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 1 — Title                                              -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide active" id="slide-1">
+  <h1>The Web from Zero</h1>
+  <p class="subtitle" style="margin-top: 8px;">How the web actually works, from first principles</p>
+  <div style="margin-top: 48px; text-align: center;">
+    <p class="small">CTF Club — Web Fundamentals</p>
+    <p class="small" style="margin-top: 8px;">Arrow keys or swipe to navigate</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 2 — Client and Server                                 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-2">
+  <h2>Client and Server</h2>
+  <div class="two-col" style="margin-top: 32px;">
+    <div>
+      <p style="font-size: 1.2rem; margin-bottom: 20px;">
+        Every website lives on a <strong class="accent">server</strong> — a computer that's always on and connected to the internet, holding files and waiting for requests.
+      </p>
+      <p style="font-size: 1.2rem; margin-bottom: 20px;">
+        When you type google.com, your browser becomes a <strong class="accent">client</strong>. It connects to Google's server and says: <em>"give me your homepage."</em>
+      </p>
+      <p style="font-size: 1.2rem;">
+        The server finds the right files and sends them back. Your browser renders them into the page you see.
+      </p>
+    </div>
+    <div>
+      <div class="illustration">
+        <img src="images/01-client-server.png" alt="Client and server diagram">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 3 — What the server holds                              -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-3">
+  <h2>What the Server Holds</h2>
+  <div class="two-col" style="margin-top: 32px;">
+    <div>
+      <div class="illustration">
+        <img src="images/02-resources.png" alt="Resources on a server">
+      </div>
+    </div>
+    <div>
+      <p style="font-size: 1.2rem; margin-bottom: 20px;">
+        Everything on a server that you can request is called a <strong class="accent">resource</strong>. Each one has a path, just like files on your computer.
+      </p>
+      <div class="card" style="margin-bottom: 16px;">
+        <ul>
+          <li><code>/index.html</code> — the homepage</li>
+          <li><code>/login</code> — a login form</li>
+          <li><code>/api/users</code> — user data (JSON)</li>
+          <li><code>/images/flag.png</code> — an image</li>
+          <li><code>/robots.txt</code> — hidden from search engines</li>
+        </ul>
+      </div>
+      <p style="font-size: 1.05rem; color: var(--dim);">
+        In CTF challenges, finding hidden or unprotected resources on a server is one of the first things you'll do.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 4 — How they talk                                      -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-4">
+  <h2>How They Talk</h2>
+  <div class="two-col" style="margin-top: 32px;">
+    <div>
+      <p style="font-size: 1.2rem; margin-bottom: 20px;">
+        Your laptop might run Windows. The server might run Linux. They're completely different systems.
+      </p>
+      <p style="font-size: 1.2rem; margin-bottom: 20px;">
+        For them to understand each other, they follow a shared set of rules called a <strong class="accent">protocol</strong>.
+      </p>
+      <p style="font-size: 1.2rem;">
+        The protocol of the web is <strong>HTTP</strong> — HyperText Transfer Protocol. It defines exactly how requests and responses are formatted so any client can talk to any server.
+      </p>
+    </div>
+    <div>
+      <div class="illustration">
+        <img src="images/03-http-protocol.png" alt="HTTP protocol as shared language">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 5 — The request and response                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-5">
+  <h2>Request and Response</h2>
+  <div class="content" style="margin-top: 32px;">
+    <div class="illustration" style="max-width: 700px;">
+      <img src="images/04-request-response.png" alt="HTTP request and response">
+    </div>
+    <p style="text-align: center; margin-top: 20px; font-size: 1.2rem;">
+      The client sends a <strong>request</strong> (method, path, headers, body).
+      <br>The server sends back a <strong>response</strong> (status code, headers, body).
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 6 — The request-response cycle (ANIMATED)             -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-6">
+  <h2>The Request-Response Cycle</h2>
+  <div class="content" style="margin-top: 24px;">
+    <div class="anim-scene" id="rr-scene">
+      <svg viewBox="0 0 800 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Laptop body -->
+        <rect x="30" y="100" width="160" height="110" rx="8" fill="#e5e5e5" stroke="#b0b0b0" stroke-width="1.5"/>
+        <!-- Laptop screen -->
+        <rect x="40" y="108" width="140" height="80" rx="4" fill="#ffffff" stroke="#c0c0c0" stroke-width="1"/>
+        <!-- Laptop base -->
+        <path d="M20 210 L30 200 L190 200 L200 210 Z" fill="#d4d4d4" stroke="#b0b0b0" stroke-width="1"/>
+        <!-- Laptop keyboard hint -->
+        <rect x="70" y="194" width="80" height="3" rx="1" fill="#c0c0c0"/>
+        <!-- Label: Client -->
+        <text x="110" y="238" text-anchor="middle" font-family="IBM Plex Sans" font-size="13" font-weight="600" fill="#1a1a1a">Client</text>
+        <text x="110" y="254" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#777">your browser</text>
+
+        <!-- Laptop screen content: loading state (hidden initially) -->
+        <g id="laptop-empty">
+          <text x="110" y="148" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#c0c0c0">google.com</text>
+          <!-- Address bar -->
+          <rect x="50" y="114" width="120" height="12" rx="2" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="0.5"/>
+          <text x="56" y="123" font-family="IBM Plex Mono" font-size="7" fill="#999">google.com</text>
+        </g>
+
+        <!-- Laptop screen content: loaded page (hidden initially, shown after response) -->
+        <g id="laptop-loaded" opacity="0">
+          <!-- Address bar -->
+          <rect x="50" y="114" width="120" height="12" rx="2" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="0.5"/>
+          <text x="56" y="123" font-family="IBM Plex Mono" font-size="7" fill="#2563eb">google.com</text>
+          <!-- Fake Google page -->
+          <text x="110" y="142" text-anchor="middle" font-family="IBM Plex Sans" font-size="14" font-weight="700" fill="#1a1a1a">Google</text>
+          <!-- Search bar -->
+          <rect x="62" y="150" width="96" height="12" rx="6" fill="#ffffff" stroke="#d0d0d0" stroke-width="0.8"/>
+          <!-- Two small buttons -->
+          <rect x="78" y="168" width="24" height="8" rx="2" fill="#2563eb"/>
+          <rect x="108" y="168" width="24" height="8" rx="2" fill="#e5e5e5" stroke="#d0d0d0" stroke-width="0.5"/>
+        </g>
+
+        <!-- Server rack -->
+        <rect x="600" y="80" width="120" height="140" rx="6" fill="#e8e8e8" stroke="#b0b0b0" stroke-width="1.5"/>
+        <!-- Server slots -->
+        <rect x="612" y="92" width="96" height="16" rx="2" fill="#d0d0d0" stroke="#b8b8b8" stroke-width="0.5"/>
+        <circle cx="700" cy="100" r="3" fill="#15803d" id="server-led-1"/>
+        <rect x="612" y="114" width="96" height="16" rx="2" fill="#d0d0d0" stroke="#b8b8b8" stroke-width="0.5"/>
+        <circle cx="700" cy="122" r="3" fill="#9ca3af"/>
+        <rect x="612" y="136" width="96" height="16" rx="2" fill="#d0d0d0" stroke="#b8b8b8" stroke-width="0.5"/>
+        <circle cx="700" cy="144" r="3" fill="#9ca3af"/>
+        <rect x="612" y="158" width="96" height="16" rx="2" fill="#d0d0d0" stroke="#b8b8b8" stroke-width="0.5"/>
+        <circle cx="700" cy="166" r="3" fill="#9ca3af"/>
+        <rect x="612" y="180" width="96" height="16" rx="2" fill="#d0d0d0" stroke="#b8b8b8" stroke-width="0.5"/>
+        <circle cx="700" cy="188" r="3" fill="#9ca3af"/>
+        <!-- Label: Server -->
+        <text x="660" y="238" text-anchor="middle" font-family="IBM Plex Sans" font-size="13" font-weight="600" fill="#1a1a1a">Server</text>
+        <text x="660" y="254" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#777">google.com</text>
+
+        <!-- Connection line -->
+        <line x1="200" y1="155" x2="600" y2="155" stroke="#d8d8d8" stroke-width="1" stroke-dasharray="4 4"/>
+
+        <!-- Request packet (animated) -->
+        <circle id="req-packet" cx="200" cy="145" r="6" fill="#2563eb" opacity="0"/>
+        <text id="req-label" x="200" y="132" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" font-weight="500" fill="#2563eb" opacity="0">GET /index.html</text>
+
+        <!-- Response packet (animated) -->
+        <circle id="res-packet" cx="600" cy="165" r="6" fill="#15803d" opacity="0"/>
+        <text id="res-label" x="600" y="185" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" font-weight="500" fill="#15803d" opacity="0">200 OK + HTML</text>
+
+        <!-- Server processing indicator -->
+        <rect id="server-glow" x="600" y="80" width="120" height="140" rx="6" fill="none" stroke="#2563eb" stroke-width="2" opacity="0"/>
+      </svg>
+    </div>
+    <div class="anim-steps" id="rr-steps">
+      <span class="anim-step">1. Client sends request</span>
+      <span class="anim-step">2. Server processes</span>
+      <span class="anim-step">3. Server sends response</span>
+      <span class="anim-step">4. Page loads</span>
+    </div>
+    <button class="replay-btn" onclick="replayAnimation()">replay</button>
+    <p style="text-align: center; margin-top: 16px; font-size: 1.05rem; color: var(--dim);">
+      Every web interaction follows this pattern. The client asks, the server answers.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 7 — Recap: Web Basics                                  -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-7">
+  <h2>So far</h2>
+  <div class="content" style="margin-top: 32px;">
+    <div class="three-col">
+      <div class="card">
+        <h3>Client and Server</h3>
+        <p>You (client) request a resource. The server holds it and sends it back.</p>
+      </div>
+      <div class="card">
+        <h3>Resources</h3>
+        <p>Everything on a server has a path: <code>/index.html</code>, <code>/api/users</code>, <code>/flag.txt</code>.</p>
+      </div>
+      <div class="card">
+        <h3>HTTP</h3>
+        <p>The protocol that lets any client talk to any server, regardless of OS or hardware.</p>
+      </div>
+    </div>
+    <p style="text-align: center; margin-top: 28px; font-size: 1.25rem;">
+      Every request has a <strong>method</strong> and a <strong>path</strong>.
+      Every response has a <strong>status code</strong> and a <strong>body</strong>.
+      <br><span class="dim">Next: what those status codes and methods actually mean.</span>
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 9 — HTTP Status Codes overview                         -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-8">
+  <h2>HTTP Status Codes</h2>
+  <p class="subtitle">The server's response classification</p>
+  <div class="content" style="margin-top: 28px;">
+    <div class="three-col" style="grid-template-columns: 1fr 1fr;">
+      <div class="card">
+        <h3><span class="status s-2xx">2xx</span> &mdash; Success</h3>
+        <p>The request was received, understood, and processed successfully.</p>
+      </div>
+      <div class="card">
+        <h3><span class="status s-3xx">3xx</span> &mdash; Redirect</h3>
+        <p>The resource has moved. The client should follow the new location.</p>
+      </div>
+      <div class="card">
+        <h3><span class="status s-4xx">4xx</span> &mdash; Client Error</h3>
+        <p>The request was malformed, unauthorized, or pointed to something that doesn't exist.</p>
+      </div>
+      <div class="card">
+        <h3><span class="status s-5xx">5xx</span> &mdash; Server Error</h3>
+        <p>The server failed to process a valid request. Something broke on their end.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 9 — Common status codes                                -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-9">
+  <h2>Common Status Codes</h2>
+  <div class="content" style="margin-top: 20px;">
+    <table>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Meaning</th>
+      </tr>
+      <tr>
+        <td><span class="status s-2xx">200</span></td>
+        <td>OK</td>
+        <td>Request succeeded, here's the data</td>
+      </tr>
+      <tr>
+        <td><span class="status s-2xx">201</span></td>
+        <td>Created</td>
+        <td>New resource was created (e.g. account registration)</td>
+      </tr>
+      <tr>
+        <td><span class="status s-3xx">301</span></td>
+        <td>Moved Permanently</td>
+        <td>Resource permanently relocated to a new URL</td>
+      </tr>
+      <tr>
+        <td><span class="status s-3xx">302</span></td>
+        <td>Found</td>
+        <td>Temporary redirect — follow the Location header</td>
+      </tr>
+      <tr>
+        <td><span class="status s-4xx">403</span></td>
+        <td>Forbidden</td>
+        <td>You're authenticated but lack permission</td>
+      </tr>
+      <tr>
+        <td><span class="status s-4xx">404</span></td>
+        <td>Not Found</td>
+        <td>The requested resource does not exist</td>
+      </tr>
+      <tr>
+        <td><span class="status s-5xx">500</span></td>
+        <td>Internal Server Error</td>
+        <td>The server encountered an unexpected condition</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 10 — HTTP Methods overview                              -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-10">
+  <h2>HTTP Methods</h2>
+  <p class="subtitle">Each request specifies an action verb</p>
+  <div class="content" style="margin-top: 28px;">
+    <table>
+      <tr>
+        <th>Method</th>
+        <th>Purpose</th>
+        <th>Has Body?</th>
+        <th>Idempotent?</th>
+      </tr>
+      <tr>
+        <td><span class="method">GET</span></td>
+        <td>Retrieve a resource</td>
+        <td>No</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><span class="method">POST</span></td>
+        <td>Submit data / create a resource</td>
+        <td>Yes</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><span class="method">PUT</span></td>
+        <td>Replace a resource entirely</td>
+        <td>Yes</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><span class="method">PATCH</span></td>
+        <td>Partially update a resource</td>
+        <td>Yes</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><span class="method">DELETE</span></td>
+        <td>Remove a resource</td>
+        <td>Optional</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><span class="method">OPTIONS</span></td>
+        <td>Query which methods are supported</td>
+        <td>No</td>
+        <td>Yes</td>
+      </tr>
+    </table>
+    <p class="small" style="margin-top: 12px;">
+      Idempotent = calling it multiple times has the same effect as calling it once.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 11 — GET deep dive                                     -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-11">
+  <h2><span class="method">GET</span> &mdash; Retrieving Data</h2>
+  <div class="content" style="margin-top: 28px;">
+    <p style="font-size: 1.3rem; text-align: center; margin-bottom: 28px;">
+      Asks the server to <strong>return</strong> a resource. It should never modify anything on the server.
+    </p>
+    <pre style="max-width: 600px; margin: 0 auto;">
+<span class="kw">GET</span> <span class="str">/search?q=what+is+ctf</span> HTTP/1.1
+<span class="attr">Host:</span> www.google.com
+
+<span class="cmt">-- data is in the URL itself</span>
+<span class="cmt">-- google.com/search?q=what+is+ctf</span>
+    </pre>
+    <p style="text-align: center; margin-top: 24px; font-size: 1.2rem; color: var(--dim);">
+      Parameters are in the <strong style="color: var(--text);">URL</strong> — visible in the address bar, browser history, and server logs.
+      <br>Never send passwords or secrets via GET.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 12 — POST deep dive                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-12">
+  <h2><span class="method">POST</span> &mdash; Sending Data</h2>
+  <div class="content" style="margin-top: 28px;">
+    <p style="font-size: 1.3rem; text-align: center; margin-bottom: 28px;">
+      Sends data to the server in the request <strong>body</strong> to create a resource or trigger processing.
+    </p>
+    <pre style="max-width: 600px; margin: 0 auto;">
+<span class="kw">POST</span> <span class="str">/login</span> HTTP/1.1
+<span class="attr">Host:</span> www.example.com
+<span class="attr">Content-Type:</span> application/x-www-form-urlencoded
+
+<span class="str">username=hacker&amp;password=s3cret</span>
+
+<span class="cmt">-- data is in the body, not the URL</span>
+    </pre>
+    <p style="text-align: center; margin-top: 24px; font-size: 1.2rem; color: var(--dim);">
+      Data is in the <strong style="color: var(--text);">body</strong> — not visible in the address bar.
+      <br>But it's <strong style="color: var(--text);">not encrypted</strong> without HTTPS. Anyone on the network can still read it.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 13 — GET vs POST                                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-13">
+  <h2>GET vs POST</h2>
+  <div class="content" style="margin-top: 28px;">
+    <table>
+      <tr>
+        <th></th>
+        <th><span class="method">GET</span></th>
+        <th><span class="method">POST</span></th>
+      </tr>
+      <tr>
+        <td><strong>Purpose</strong></td>
+        <td>Retrieve data</td>
+        <td>Submit data</td>
+      </tr>
+      <tr>
+        <td><strong>Data location</strong></td>
+        <td>URL query string</td>
+        <td>Request body</td>
+      </tr>
+      <tr>
+        <td><strong>Visible in URL</strong></td>
+        <td>Yes</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><strong>Bookmarkable</strong></td>
+        <td>Yes</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><strong>Cached by browser</strong></td>
+        <td>Yes</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><strong>Data size limit</strong></td>
+        <td>~2048 chars (URL limit)</td>
+        <td>No practical limit</td>
+      </tr>
+      <tr>
+        <td><strong>Safe for secrets</strong></td>
+        <td>Never</td>
+        <td>Only with HTTPS</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 14 — HTTP Request anatomy                              -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-14">
+  <h2>Anatomy of an HTTP Request</h2>
+  <div class="content" style="margin-top: 28px;">
+    <pre>
+<span class="kw">GET</span> /search?q=ctf HTTP/1.1          <span class="cmt">-- method + path + version</span>
+<span class="attr">Host:</span> <span class="str">www.google.com</span>                <span class="cmt">-- which server</span>
+<span class="attr">User-Agent:</span> <span class="str">Mozilla/5.0 (Chrome)</span>   <span class="cmt">-- your browser</span>
+<span class="attr">Accept:</span> <span class="str">text/html</span>                    <span class="cmt">-- what format you want</span>
+<span class="attr">Accept-Language:</span> <span class="str">en-US</span>              <span class="cmt">-- preferred language</span>
+    </pre>
+    <p style="margin-top: 20px; color: var(--dim);">
+      Now you can see how the <strong style="color: var(--text);">method</strong> (GET) and <strong style="color: var(--text);">status codes</strong> you just learned appear in a real request. The first line specifies the method, path, and HTTP version. The headers carry metadata.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 15 — HTTP Response anatomy                             -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-15">
+  <h2>Anatomy of an HTTP Response</h2>
+  <div class="content" style="margin-top: 28px;">
+    <pre>
+<span class="kw">HTTP/1.1</span> <span class="str">200 OK</span>                      <span class="cmt">-- status code</span>
+<span class="attr">Content-Type:</span> <span class="str">text/html</span>              <span class="cmt">-- what's being sent</span>
+<span class="attr">Content-Length:</span> <span class="str">3842</span>                 <span class="cmt">-- size in bytes</span>
+<span class="attr">Set-Cookie:</span> <span class="str">session=abc123</span>           <span class="cmt">-- session tracking</span>
+
+<span class="tag">&lt;html&gt;</span>
+  <span class="tag">&lt;body&gt;</span>Welcome to Google!<span class="tag">&lt;/body&gt;</span>
+<span class="tag">&lt;/html&gt;</span>                                    <span class="cmt">-- the body</span>
+    </pre>
+    <p style="margin-top: 20px; color: var(--dim);">
+      The first line contains the <strong style="color: var(--text);">status code</strong> (200 OK). The headers describe the content. Everything after the blank line is the <strong style="color: var(--text);">body</strong> — the actual resource.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 16 — URL anatomy                                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-16">
+  <h2>Anatomy of a URL</h2>
+  <div class="content" style="margin-top: 28px;">
+    <pre style="font-size: 1rem; text-align: center; line-height: 2;">
+<span class="kw">https</span>://<span class="str">www.google.com</span><span class="attr">/search</span><span class="tag">?q=ctf&amp;lang=en</span><span class="cmt">#results</span>
+  <span class="kw">|</span>         <span class="str">|</span>           <span class="attr">|</span>        <span class="tag">|</span>             <span class="cmt">|</span>
+<span class="kw">protocol</span>  <span class="str">domain</span>       <span class="attr">path</span>   <span class="tag">query params</span>    <span class="cmt">fragment</span>
+    </pre>
+    <div class="three-col" style="margin-top: 28px;">
+      <div class="card">
+        <h3>Protocol</h3>
+        <p><code>https://</code> — how to communicate (HTTP with encryption)</p>
+      </div>
+      <div class="card">
+        <h3>Domain</h3>
+        <p><code>www.google.com</code> — which server to contact</p>
+      </div>
+      <div class="card">
+        <h3>Path + Query</h3>
+        <p><code>/search?q=ctf</code> — which resource, with parameters</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 17 — HTTP Recap                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-17">
+  <h2>HTTP Recap</h2>
+  <div class="content" style="margin-top: 28px;">
+    <div class="three-col">
+      <div class="card">
+        <h3>Status Codes</h3>
+        <p>2xx = success, 3xx = redirect, 4xx = you messed up, 5xx = server messed up.</p>
+      </div>
+      <div class="card">
+        <h3>Methods</h3>
+        <p>GET reads data (in URL). POST sends data (in body). PUT replaces. DELETE removes.</p>
+      </div>
+      <div class="card">
+        <h3>Request / Response</h3>
+        <p>Every request has a method, path, and headers. Every response has a status code, headers, and body.</p>
+      </div>
+    </div>
+    <p style="text-align: center; margin-top: 24px; font-size: 1.1rem; color: var(--dim);">
+      This is the foundation. Every web CTF challenge involves reading, crafting, or manipulating HTTP messages.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 18 — HTML: Structure                                   -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-18">
+  <h2>HTML — Structure</h2>
+  <p class="subtitle">What exists on the page</p>
+  <div class="two-col" style="margin-top: 24px;">
+    <div>
+      <!-- Live frame: HTML only -->
+      <div style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+        <div style="background: var(--surface); padding: 6px 12px; font-size: 0.75rem; color: var(--dim); border-bottom: 1px solid var(--border);">HTML only — no styling</div>
+        <div style="padding: 16px; background: white; font-family: serif;">
+          <h3 style="color: black; font-size: 1.2rem; margin-bottom: 4px; font-family: serif; letter-spacing: 0;">CTF Login</h3>
+          <p style="color: black; font-size: 0.9rem; line-height: 1.4; font-family: serif;">Enter your credentials to access the challenge.</p>
+          <div style="margin-top: 8px;">
+            <span style="font-size: 0.85rem; color: black; font-family: serif;">Username</span><br>
+            <input type="text" style="border: 1px inset; padding: 1px; font-family: serif; width: 160px;" disabled>
+          </div>
+          <div style="margin-top: 6px;">
+            <span style="font-size: 0.85rem; color: black; font-family: serif;">Password</span><br>
+            <input type="password" style="border: 1px inset; padding: 1px; font-family: serif; width: 160px;" disabled>
+          </div>
+          <div style="margin-top: 8px;">
+            <button style="font-family: serif; padding: 2px 8px;" disabled>Log In</button>
+          </div>
+        </div>
+      </div>
+      <p class="small" style="margin-top: 8px; text-align: center;">Raw HTML — browser default styling</p>
+    </div>
+    <div>
+      <div class="card">
+        <p>HTML defines the <strong>elements</strong> on the page: headings, paragraphs, inputs, buttons, links, images.</p>
+        <ul style="margin-top: 12px;">
+          <li><code>&lt;h1&gt;</code> — heading</li>
+          <li><code>&lt;p&gt;</code> — paragraph</li>
+          <li><code>&lt;input&gt;</code> — text field</li>
+          <li><code>&lt;button&gt;</code> — clickable button</li>
+          <li><code>&lt;form&gt;</code> — groups inputs together</li>
+        </ul>
+      </div>
+      <p style="margin-top: 12px; color: var(--dim);">
+        Without CSS, the browser uses its ugly default styles. The structure is there, but nothing looks designed.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 19 — CSS: Style                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-19">
+  <h2>CSS — Style</h2>
+  <p class="subtitle">How it looks</p>
+  <div class="two-col" style="margin-top: 24px;">
+    <div>
+      <!-- Live frame: HTML + CSS -->
+      <div style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+        <div style="background: var(--surface); padding: 6px 12px; font-size: 0.75rem; color: var(--dim); border-bottom: 1px solid var(--border);">HTML + CSS — styled</div>
+        <div style="padding: 32px; background: #f8fafc; font-family: 'IBM Plex Sans', sans-serif; display: flex; justify-content: center;">
+          <div style="background: white; padding: 28px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); width: 260px;">
+            <div style="font-size: 1.1rem; font-weight: 600; color: #1a1a1a; margin-bottom: 4px;">CTF Login</div>
+            <div style="font-size: 0.8rem; color: #777; margin-bottom: 16px;">Enter your credentials to access the challenge.</div>
+            <div style="margin-bottom: 10px;">
+              <div style="font-size: 0.75rem; font-weight: 500; color: #555; margin-bottom: 3px;">Username</div>
+              <input type="text" placeholder="admin" style="width: 100%; padding: 7px 10px; border: 1px solid #d8d8d8; border-radius: 6px; font-size: 0.85rem; font-family: inherit;" disabled>
+            </div>
+            <div style="margin-bottom: 14px;">
+              <div style="font-size: 0.75rem; font-weight: 500; color: #555; margin-bottom: 3px;">Password</div>
+              <input type="password" value="secret" style="width: 100%; padding: 7px 10px; border: 1px solid #d8d8d8; border-radius: 6px; font-size: 0.85rem; font-family: inherit;" disabled>
+            </div>
+            <button style="width: 100%; padding: 8px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; font-family: inherit;" disabled>Log In</button>
+          </div>
+        </div>
+      </div>
+      <p class="small" style="margin-top: 8px; text-align: center;">Same HTML — CSS added colors, spacing, rounded corners</p>
+    </div>
+    <div>
+      <div class="card">
+        <p>CSS controls <strong>appearance</strong>: colors, fonts, spacing, layout, borders, shadows.</p>
+        <ul style="margin-top: 12px;">
+          <li><code>color</code>, <code>background</code> — colors</li>
+          <li><code>padding</code>, <code>margin</code> — spacing</li>
+          <li><code>border-radius</code> — rounded corners</li>
+          <li><code>box-shadow</code> — depth</li>
+          <li><code>font-size</code>, <code>font-weight</code> — typography</li>
+        </ul>
+      </div>
+      <p style="margin-top: 12px; color: var(--dim);">
+        The same HTML, but now it looks like a real login form. CSS transformed the raw structure into something usable.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 20 — JavaScript: Behavior                              -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-20">
+  <h2>JavaScript — Behavior</h2>
+  <p class="subtitle">What it does</p>
+  <div class="two-col" style="margin-top: 24px;">
+    <div>
+      <!-- Live frame: HTML + CSS + JS -->
+      <div style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+        <div style="background: var(--surface); padding: 6px 12px; font-size: 0.75rem; color: var(--dim); border-bottom: 1px solid var(--border);">HTML + CSS + JS — interactive</div>
+        <div style="padding: 32px; background: #f8fafc; font-family: 'IBM Plex Sans', sans-serif; display: flex; justify-content: center;">
+          <div style="background: white; padding: 28px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); width: 260px;">
+            <div style="font-size: 1.1rem; font-weight: 600; color: #1a1a1a; margin-bottom: 4px;">CTF Login</div>
+            <div style="font-size: 0.8rem; color: #777; margin-bottom: 16px;">Enter your credentials to access the challenge.</div>
+            <div style="margin-bottom: 10px;">
+              <div style="font-size: 0.75rem; font-weight: 500; color: #555; margin-bottom: 3px;">Username</div>
+              <input id="demo-user" type="text" placeholder="admin" style="width: 100%; padding: 7px 10px; border: 1px solid #d8d8d8; border-radius: 6px; font-size: 0.85rem; font-family: inherit;">
+            </div>
+            <div style="margin-bottom: 14px;">
+              <div style="font-size: 0.75rem; font-weight: 500; color: #555; margin-bottom: 3px;">Password</div>
+              <input id="demo-pass" type="password" placeholder="password" style="width: 100%; padding: 7px 10px; border: 1px solid #d8d8d8; border-radius: 6px; font-size: 0.85rem; font-family: inherit;">
+            </div>
+            <button id="demo-btn" style="width: 100%; padding: 8px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; font-family: inherit;">Log In</button>
+            <div id="demo-msg" style="margin-top: 10px; font-size: 0.8rem; text-align: center; min-height: 1.2em;"></div>
+          </div>
+        </div>
+      </div>
+      <p class="small" style="margin-top: 8px; text-align: center;">Try it — type anything and click Log In</p>
+    </div>
+    <div>
+      <div class="card">
+        <p>JavaScript adds <strong>interactivity</strong>: reacting to clicks, validating input, sending data to the server.</p>
+        <ul style="margin-top: 12px;">
+          <li>Click the button — JS handles the event</li>
+          <li>Read input values — JS accesses form data</li>
+          <li>Show a message — JS modifies the page</li>
+          <li>Send a POST request — JS talks to the server</li>
+        </ul>
+      </div>
+      <p style="margin-top: 12px; color: var(--dim);">
+        Without JS, the button does nothing. JavaScript is what makes a static page come alive — and what creates most web vulnerabilities you'll exploit in CTF.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 21 — DevTools                                          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-21">
+  <h2>Browser DevTools</h2>
+  <p class="subtitle">Your first tool for web security</p>
+  <div class="two-col" style="margin-top: 24px;">
+    <div>
+      <div class="card" style="margin-bottom: 16px;">
+        <h3>How to open</h3>
+        <p><code>F12</code> &nbsp;or&nbsp; <code>Ctrl+Shift+I</code> &nbsp;(Mac: <code>Cmd+Opt+I</code>)</p>
+      </div>
+      <div class="card">
+        <h3>Tabs you need to know</h3>
+        <ul>
+          <li><strong>Elements</strong> — inspect and edit HTML/CSS live</li>
+          <li><strong>Console</strong> — execute JavaScript, view errors</li>
+          <li><strong>Network</strong> — see every HTTP request and response</li>
+          <li><strong>Sources</strong> — view all loaded files and scripts</li>
+          <li><strong>Application</strong> — cookies, local storage, sessions</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="illustration">
+        <img src="images/05-devtools.png" alt="Browser DevTools Network tab">
+      </div>
+      <p class="small" style="margin-top: 12px;">
+        The Network tab is especially critical for CTF challenges — you can inspect every request, modify headers, replay requests, and find hidden endpoints.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 22 — Recap                                             -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-22">
+  <h2>Recap</h2>
+  <div class="content" style="margin-top: 28px;">
+    <div class="three-col">
+      <div class="card">
+        <h3>01 &mdash; Client / Server</h3>
+        <p>The client requests, the server responds. This is the foundation of all web communication.</p>
+      </div>
+      <div class="card">
+        <h3>02 &mdash; HTTP</h3>
+        <p>The protocol that standardizes how requests and responses are structured between any two machines.</p>
+      </div>
+      <div class="card">
+        <h3>03 &mdash; Status Codes</h3>
+        <p>2xx success, 3xx redirect, 4xx client error, 5xx server error.</p>
+      </div>
+    </div>
+    <div class="three-col" style="margin-top: 16px;">
+      <div class="card">
+        <h3>04 &mdash; Methods</h3>
+        <p>GET retrieves, POST submits. Data in URL vs body. Never send secrets in GET.</p>
+      </div>
+      <div class="card">
+        <h3>05 &mdash; HTML / CSS / JS</h3>
+        <p>Structure, style, behavior. The three layers that compose every webpage.</p>
+      </div>
+      <div class="card">
+        <h3>06 &mdash; DevTools</h3>
+        <p>F12 — inspect elements, run JS, monitor network traffic. Essential for web CTF.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SLIDE 23 — End                                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-23">
+  <h1>Now go break things.</h1>
+  <p class="subtitle" style="margin-top: 8px;">Legally. In CTF challenges.</p>
+  <p style="margin-top: 48px; color: var(--dim); font-size: 1.1rem;">Questions?</p>
+</div>
+
+
+<!-- ── Navigation & Progress ── -->
+<div class="progress" id="progress"></div>
+<div class="slide-counter" id="counter">01 / 23</div>
+<div class="nav">
+  <button onclick="changeSlide(-1)">prev</button>
+  <button onclick="changeSlide(1)">next</button>
+</div>
+
+<script>
+  let current = 1;
+  const total = document.querySelectorAll('.slide').length;
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function showSlide(n) {
+    document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(`slide-${n}`);
+    if (target) target.classList.add('active');
+    document.getElementById('progress').style.width = `${(n / total) * 100}%`;
+    document.getElementById('counter').textContent = `${pad(n)} / ${pad(total)}`;
+  }
+
+  function changeSlide(dir) {
+    current = Math.max(1, Math.min(total, current + dir));
+    showSlide(current);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); }
+    if (e.key === 'Home') { e.preventDefault(); current = 1; showSlide(current); }
+    if (e.key === 'End') { e.preventDefault(); current = total; showSlide(current); }
+  });
+
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', (e) => {
+    const diff = e.changedTouches[0].screenX - touchStartX;
+    if (Math.abs(diff) > 50) changeSlide(diff < 0 ? 1 : -1);
+  });
+
+  // ── Request-response SVG animation ──
+  let rrTimers = [];
+
+  function animateAttr(el, attr, from, to, dur, delay) {
+    return new Promise(resolve => {
+      rrTimers.push(setTimeout(() => {
+        const start = performance.now();
+        function tick(now) {
+          const t = Math.min((now - start) / dur, 1);
+          const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+          const val = from + (to - from) * ease;
+          el.setAttribute(attr, val);
+          if (t < 1) requestAnimationFrame(tick);
+          else resolve();
+        }
+        requestAnimationFrame(tick);
+      }, delay));
+    });
+  }
+
+  function setOpacity(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('opacity', val);
+  }
+
+  function startRRAnimation() {
+    clearRRTimers();
+    const steps = document.querySelectorAll('#rr-steps .anim-step');
+    steps.forEach(s => s.classList.remove('active-step'));
+
+    // Reset state
+    const ids = ['req-packet', 'req-label', 'res-packet', 'res-label', 'server-glow', 'laptop-loaded'];
+    ids.forEach(id => setOpacity(id, 0));
+    setOpacity('laptop-empty', 1);
+
+    const reqP = document.getElementById('req-packet');
+    const reqL = document.getElementById('req-label');
+    const resP = document.getElementById('res-packet');
+    const resL = document.getElementById('res-label');
+
+    if (!reqP) return;
+    reqP.setAttribute('cx', 200);
+    reqL.setAttribute('x', 200);
+    resP.setAttribute('cx', 600);
+    resL.setAttribute('x', 600);
+
+    // Step 1: Request travels right (0.5s delay, 1.5s duration)
+    rrTimers.push(setTimeout(() => {
+      steps[0].classList.add('active-step');
+      setOpacity('req-packet', 1);
+      setOpacity('req-label', 1);
+      animateAttr(reqP, 'cx', 200, 600, 1500, 0);
+      animateAttr(reqL, 'x', 200, 400, 1500, 0);
+    }, 500));
+
+    // Hide request packet on arrival
+    rrTimers.push(setTimeout(() => {
+      setOpacity('req-packet', 0);
+      setOpacity('req-label', 0);
+    }, 2100));
+
+    // Step 2: Server processes (2.2s)
+    rrTimers.push(setTimeout(() => {
+      steps.forEach(s => s.classList.remove('active-step'));
+      steps[1].classList.add('active-step');
+      setOpacity('server-glow', 0.8);
+      // Blink server LED
+      const led = document.getElementById('server-led-1');
+      if (led) led.setAttribute('fill', '#2563eb');
+    }, 2200));
+
+    rrTimers.push(setTimeout(() => {
+      setOpacity('server-glow', 0);
+      const led = document.getElementById('server-led-1');
+      if (led) led.setAttribute('fill', '#15803d');
+    }, 3000));
+
+    // Step 3: Response travels left (3.2s delay, 1.5s duration)
+    rrTimers.push(setTimeout(() => {
+      steps.forEach(s => s.classList.remove('active-step'));
+      steps[2].classList.add('active-step');
+      resP.setAttribute('cx', 600);
+      resL.setAttribute('x', 600);
+      setOpacity('res-packet', 1);
+      setOpacity('res-label', 1);
+      animateAttr(resP, 'cx', 600, 200, 1500, 0);
+      animateAttr(resL, 'x', 600, 400, 1500, 0);
+    }, 3200));
+
+    // Hide response, show loaded page
+    rrTimers.push(setTimeout(() => {
+      setOpacity('res-packet', 0);
+      setOpacity('res-label', 0);
+    }, 4800));
+
+    // Step 4: Page loads on laptop screen
+    rrTimers.push(setTimeout(() => {
+      steps.forEach(s => s.classList.remove('active-step'));
+      steps[3].classList.add('active-step');
+      setOpacity('laptop-empty', 0);
+      setOpacity('laptop-loaded', 1);
+    }, 4900));
+  }
+
+  function clearRRTimers() {
+    rrTimers.forEach(t => clearTimeout(t));
+    rrTimers = [];
+  }
+
+  function replayAnimation() {
+    startRRAnimation();
+  }
+
+  // Start animation when slide 6 becomes active
+  const origShowSlide = showSlide;
+  showSlide = function(n) {
+    origShowSlide(n);
+    if (n === 6) startRRAnimation();
+    else clearRRTimers();
+  };
+
+  // ── Demo login button ──
+  document.getElementById('demo-btn').addEventListener('click', function() {
+    const user = document.getElementById('demo-user').value || 'admin';
+    const pass = document.getElementById('demo-pass').value || 'password';
+    const msg = document.getElementById('demo-msg');
+    msg.style.color = '#2563eb';
+    msg.textContent = 'Sending POST /login ...';
+    setTimeout(() => {
+      msg.style.color = '#dc2626';
+      msg.textContent = '403 Forbidden — wrong credentials';
+    }, 800);
+    setTimeout(() => {
+      msg.style.color = '#777';
+      msg.textContent = 'JS sent: { user: "' + user + '", pass: "' + pass + '" }';
+    }, 2200);
+  });
+
+  showSlide(1);
+</script>
+
+</body>
+</html>
